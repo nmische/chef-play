@@ -1,17 +1,23 @@
 # default.rb
 #
 
-remote_file "/usr/src/play-#{node[:play][:version]}.tar.gz" do
-    source node[:play][:source_uri]
-    mode 0644
+package "zip"
+
+remote_file "#{node[:play][:install_dir]}/play-#{node[:play][:version]}.zip" do
+    source "http://download.playframework.org/releases/play-2.0.4.zip"
+    #source node[:play][:source_uri]
+    mode "0644"
+    notifies :run, "execute[install-play]", :immediately
+    action :create_if_missing
 end
 
-bash "install play" do
+execute "install-play" do
     user "root"
-    cwd "/usr/src/"
-    code <<-EOH
-    tar xzvf play-#{node[:play][:version]}.tar.gz
-    export PATH=$PATH:/usr/src/play-#{node[:play][:version]}
+    cwd node[:play][:install_dir]
+    command <<-EOH
+    unzip play-#{node[:play][:version]}.zip
+    export PATH=$PATH:#{node[:play][:install_dir]}/play-#{node[:play][:version]}
     EOH
+    action :nothing
 end
 
